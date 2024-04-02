@@ -6,8 +6,15 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(quickflux VERSION 1.1.3)
 
-option(quickflux_INSTALL "Enable the installation of targets." ON)
+option(quickflux_BUILD_SHARED "Build as shared library" OFF)
 
+if(quickflux_BUILD_SHARED)
+    SET(SOVERSION_MAJOR 1)
+    SET(SOVERSION_MINOR 0)
+    SET(SOVERSION_PATCH 3)
+endif()
+
+option(quickflux_INSTALL "Enable the installation of targets." ON)
 if(MSVC)
   set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 endif()
@@ -88,14 +95,37 @@ if(MSVC)
   source_group("Source Files\\MOC" REGULAR_EXPRESSION "moc*")
 endif()
 
-add_library(quickflux STATIC
-  ${quickflux_PRIVATE_SOURCES}
-  ${quickflux_PRIVATE_HEADERS}
-  ${quickflux_PUBLIC_SOURCES}
-  ${quickflux_PUBLIC_HEADERS}
-  ${moc}
-  )
-add_library(QuickFlux::quickflux ALIAS quickflux)
+if(quickflux_BUILD_SHARED)
+    add_library(quickflux SHARED
+      ${quickflux_PRIVATE_SOURCES}
+      ${quickflux_PRIVATE_HEADERS}
+      ${quickflux_PUBLIC_SOURCES}
+      ${quickflux_PUBLIC_HEADERS}
+      ${moc}
+      )
+    set_target_properties(quickflux
+      PROPERTIES
+      VERSION ${SOVERSION_MAJOR}.${SOVERSION_MINOR}.${SOVERSION_PATCH}
+      SOVERSION ${SOVERSION_MAJOR}
+      )
+    add_library(QuickFlux::quickflux ALIAS quickflux)
+
+    # copy qmldir file to build dir so QML unit tests can use it to import the plugin
+    configure_file(
+      qmldir.in
+      qmldir
+      )
+
+else()
+    add_library(quickflux STATIC
+      ${quickflux_PRIVATE_SOURCES}
+      ${quickflux_PRIVATE_HEADERS}
+      ${quickflux_PUBLIC_SOURCES}
+      ${quickflux_PUBLIC_HEADERS}
+      ${moc}
+      )
+    add_library(QuickFlux::quickflux ALIAS quickflux)
+endif()
 
 target_link_libraries(quickflux
   PUBLIC
@@ -167,5 +197,21 @@ if(quickflux_INSTALL)
       ${CMAKE_BINARY_DIR}/cmake/QuickFluxVersion.cmake
       DESTINATION ${CONFIG_PACKAGE_LOCATION}
   )
+
+  if(quickflux_BUILD_SHARED)
+    # Qt5's cmake does not export QT_IMPORTS_DIR, lets query qmake on our own for now
+    get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)
+    function(QUERY_QMAKE VAR RESULT)
+      exec_program(${QMAKE_EXECUTABLE} ARGS "-query ${VAR}" RETURN_VALUE return_code OUTPUT_VARIABLE output )
+      if(NOT return_code)
+        file(TO_CMAKE_PATH "${output}" output)
+        set(${RESULT} ${output} PARENT_SCOPE)
+      endif(NOT return_code)
+    endfunction(QUERY_QMAKE)
+    query_qmake(QT_INSTALL_QML QT_IMPORTS_DIR)
+
+    set(PLUGIN_DIR ${QT_IMPORTS_DIR}/QuickFlux)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/qmldir DESTINATION ${PLUGIN_DIR})
+  endif()
 
 endif()

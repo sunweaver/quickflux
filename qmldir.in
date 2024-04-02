@@ -1,0 +1,2 @@
+module QuickFlux
+plugin quickflux @CMAKE_INSTALL_FULL_LIBDIR@
