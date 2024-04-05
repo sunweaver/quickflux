@@ -6,13 +6,11 @@
 cmake_minimum_required(VERSION 3.0.0)
 project(quickflux VERSION 1.1.3)
 
-option(quickflux_BUILD_SHARED "Build as shared library" OFF)
+option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
-if(quickflux_BUILD_SHARED)
-    SET(SOVERSION_MAJOR 1)
-    SET(SOVERSION_MINOR 0)
-    SET(SOVERSION_PATCH 3)
-endif()
+set(SOVERSION_MAJOR 1)
+set(SOVERSION_MINOR 0)
+set(SOVERSION_PATCH 3)
 
 option(quickflux_INSTALL "Enable the installation of targets." ON)
 if(MSVC)
@@ -95,36 +93,27 @@ if(MSVC)
   source_group("Source Files\\MOC" REGULAR_EXPRESSION "moc*")
 endif()
 
-if(quickflux_BUILD_SHARED)
-    add_library(quickflux SHARED
-      ${quickflux_PRIVATE_SOURCES}
-      ${quickflux_PRIVATE_HEADERS}
-      ${quickflux_PUBLIC_SOURCES}
-      ${quickflux_PUBLIC_HEADERS}
-      ${moc}
-      )
-    set_target_properties(quickflux
-      PROPERTIES
-      VERSION ${SOVERSION_MAJOR}.${SOVERSION_MINOR}.${SOVERSION_PATCH}
-      SOVERSION ${SOVERSION_MAJOR}
-      )
-    add_library(QuickFlux::quickflux ALIAS quickflux)
+add_library(quickflux
+  ${quickflux_PRIVATE_SOURCES}
+  ${quickflux_PRIVATE_HEADERS}
+  ${quickflux_PUBLIC_SOURCES}
+  ${quickflux_PUBLIC_HEADERS}
+  ${moc}
+  )
+add_library(QuickFlux::quickflux ALIAS quickflux)
 
-    # copy qmldir file to build dir so QML unit tests can use it to import the plugin
-    configure_file(
-      qmldir.in
-      qmldir
-      )
+if(BUILD_SHARED_LIBS)
+  set_target_properties(quickflux
+    PROPERTIES
+    VERSION ${SOVERSION_MAJOR}.${SOVERSION_MINOR}.${SOVERSION_PATCH}
+    SOVERSION ${SOVERSION_MAJOR}
+    )
 
-else()
-    add_library(quickflux STATIC
-      ${quickflux_PRIVATE_SOURCES}
-      ${quickflux_PRIVATE_HEADERS}
-      ${quickflux_PUBLIC_SOURCES}
-      ${quickflux_PUBLIC_HEADERS}
-      ${moc}
-      )
-    add_library(QuickFlux::quickflux ALIAS quickflux)
+  # copy qmldir file to build dir so QML unit tests can use it to import the plugin
+  configure_file(
+    qmldir.in
+    qmldir
+    )
 endif()
 
 target_link_libraries(quickflux
