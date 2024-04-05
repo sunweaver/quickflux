@@ -109,6 +109,7 @@ if(BUILD_SHARED_LIBS)
   configure_file(
     qmldir.in
     qmldir
+    @ONLY
     )
 endif()
 
