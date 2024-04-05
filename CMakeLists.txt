@@ -8,10 +8,6 @@ project(quickflux VERSION 1.1.3)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
-set(SOVERSION_MAJOR 1)
-set(SOVERSION_MINOR 0)
-set(SOVERSION_PATCH 3)
-
 option(quickflux_INSTALL "Enable the installation of targets." ON)
 if(MSVC)
   set_property (GLOBAL PROPERTY USE_FOLDERS ON)
@@ -105,8 +101,8 @@ add_library(QuickFlux::quickflux ALIAS quickflux)
 if(BUILD_SHARED_LIBS)
   set_target_properties(quickflux
     PROPERTIES
-    VERSION ${SOVERSION_MAJOR}.${SOVERSION_MINOR}.${SOVERSION_PATCH}
-    SOVERSION ${SOVERSION_MAJOR}
+    VERSION ${PROJECT_VERSION}
+    SOVERSION ${PROJECT_VERSION_MAJOR}
     )
 
   # copy qmldir file to build dir so QML unit tests can use it to import the plugin
