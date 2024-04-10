@@ -188,7 +188,7 @@ if(quickflux_INSTALL)
       DESTINATION ${CONFIG_PACKAGE_LOCATION}
   )
 
-  if(quickflux_BUILD_SHARED)
+  if(BUILD_SHARED_LIBS)
     # Qt5's cmake does not export QT_IMPORTS_DIR, lets query qmake on our own for now
     get_target_property(QMAKE_EXECUTABLE Qt5::qmake LOCATION)
     function(QUERY_QMAKE VAR RESULT)
