@@ -9,7 +9,7 @@ project(quickflux VERSION 1.1.3)
 option(BUILD_SHARED_LIBS "Build using shared libraries" OFF)
 
 set(SOVERSION_MAJOR 1)
-set(SOVERSION_MINOR 0)
+set(SOVERSION_MINOR 1)
 set(SOVERSION_PATCH 3)
 
 option(quickflux_INSTALL "Enable the installation of targets." ON)
